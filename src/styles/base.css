@@ -1,0 +1,200 @@
+/* ─────────────────────────────────────────────────────────────
+   base.css — reset, design tokens, typography, global layout
+   ───────────────────────────────────────────────────────────── */
+
+/* Google Fonts — loaded here, NOT via <link> in HTML */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Caveat:wght@400;500&display=swap');
+
+/* ── Design tokens ─────────────────────────────────────────── */
+:root {
+  /* street palette */
+  --gully-bg:        #1c1409;
+  --gully-sky:       #0d1520;
+  --gully-lamp:      #e8c87a;
+  --gully-road:      #140f06;
+  --gully-wire:      #2a2010;
+
+  /* building accents */
+  --chai-accent:     #c8a060;
+  --reel-accent:     #1a3a6a;
+  --darkroom-accent: #4a3a20;
+  --merwans-accent:  #8a4400;
+  --post-accent:     #1a3a0e;
+
+  /* magazine interiors */
+  --chai-bg:         #f5efe0;
+  --reel-bg:         #0e1828;
+  --darkroom-bg:     #f0ece4;
+  --merwans-bg:      #1a0e08;
+  --post-bg:         #0e1a0a;
+
+  /* typography */
+  --font-display:    'Playfair Display', Georgia, serif;
+  --font-body:       'Lora', Georgia, serif;
+  --font-mono:       'IBM Plex Mono', monospace;
+  --font-handwritten:'Caveat', cursive;
+
+  /* spread layout */
+  --spread-max-width: 900px;
+  --spread-padding:   3rem;
+  --column-gap:       2rem;
+
+  /* ui z-layers */
+  --z-canvas:    0;
+  --z-hud:       10;
+  --z-cover:     20;
+  --z-interior:  30;
+  --z-modal:     40;
+}
+
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;         /* gully view is full-screen, no scroll */
+  background: var(--gully-bg);
+  color: var(--gully-lamp);
+  font-family: var(--font-mono);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Interior view re-enables scroll */
+body.interior-open {
+  overflow: auto;
+}
+
+/* ── Canvas ────────────────────────────────────────────────── */
+#gully-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--z-canvas);
+  display: block;
+}
+
+/* ── Skip link (accessibility) ─────────────────────────────── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 9999;
+  background: var(--gully-lamp);
+  color: var(--gully-bg);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  padding: 0.4rem 0.8rem;
+  border-radius: 2px;
+  text-decoration: none;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* ── Mute toggle ───────────────────────────────────────────── */
+#mute-toggle {
+  position: fixed;
+  top: 1.2rem;
+  right: 1.5rem;
+  z-index: var(--z-hud);
+  background: transparent;
+  border: 1px solid var(--gully-wire);
+  color: var(--gully-lamp);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  opacity: 0.6;
+  transition: opacity 0.2s, border-color 0.2s;
+}
+
+#mute-toggle:hover { opacity: 1; border-color: var(--gully-lamp); }
+#mute-toggle.muted .mute-icon { opacity: 0.3; }
+
+/* ── Progress strip ────────────────────────────────────────── */
+#progress-strip {
+  position: fixed;
+  bottom: 1.8rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-hud);
+  text-align: center;
+}
+
+#progress-strip .building-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gully-lamp);
+  opacity: 0.7;
+  margin-bottom: 0.4rem;
+  min-height: 1em;
+}
+
+#progress-strip .dots {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+#progress-strip .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gully-wire);
+  border: 1px solid #3a3018;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+#progress-strip .dot.active {
+  background: var(--gully-lamp);
+  box-shadow: 0 0 6px var(--gully-lamp);
+}
+
+/* ── "Click to enter" landing prompt ───────────────────────── */
+#enter-prompt {
+  position: fixed;
+  bottom: 4rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-hud);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gully-lamp);
+  opacity: 0;
+  animation: fade-in-prompt 1s ease 1.5s forwards;
+  pointer-events: none;
+}
+
+@keyframes fade-in-prompt {
+  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  to   { opacity: 0.5; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── Reduced motion overrides ──────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

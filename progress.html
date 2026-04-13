@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ranveer behl — build progress</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Lora:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1c1409;
+    color: #e8c87a;
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 3rem;
+    border-bottom: 1px solid #2a2010;
+    padding-bottom: 2rem;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.3rem;
+  }
+
+  header p {
+    font-size: 0.75rem;
+    color: #8a7a50;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .overall-bar {
+    max-width: 700px;
+    margin: 0 auto 3rem;
+    text-align: center;
+  }
+
+  .overall-bar .label {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #8a7a50;
+    margin-bottom: 0.5rem;
+  }
+
+  .overall-bar .bar-track {
+    height: 6px;
+    background: #2a2010;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.4rem;
+  }
+
+  .overall-bar .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #e8c87a, #c8a060);
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+
+  .overall-bar .pct {
+    font-size: 1.6rem;
+    font-family: 'Playfair Display', serif;
+    color: #e8c87a;
+  }
+
+  .street {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+  }
+
+  .building {
+    width: 120px;
+    text-align: center;
+    cursor: default;
+  }
+
+  .building .facade {
+    width: 100%;
+    height: 140px;
+    border: 1px solid #2a2010;
+    border-radius: 4px 4px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0.5rem;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .building .facade .glow {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #e8c87a;
+    box-shadow: 0 0 10px #e8c87a;
+    opacity: 0.3;
+  }
+
+  .building.done .facade .glow { opacity: 1; }
+  .building.active .facade .glow { opacity: 1; animation: flicker 2s infinite; }
+
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .building .facade .door {
+    width: 30px;
+    height: 40px;
+    border: 1px solid;
+    border-radius: 2px 2px 0 0;
+    margin-bottom: -1px;
+  }
+
+  .building .name {
+    font-size: 0.6rem;
+    margin-top: 0.5rem;
+    letter-spacing: 0.05em;
+    color: #8a7a50;
+    text-transform: uppercase;
+  }
+
+  .building .mag {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 0.7rem;
+    color: #5a4a30;
+    margin-top: 0.15rem;
+  }
+
+  .building .pct-badge {
+    font-size: 0.65rem;
+    margin-top: 0.3rem;
+    font-weight: 500;
+  }
+
+  /* building-specific colours */
+  .b-chai .facade { background: linear-gradient(180deg, #2a1f0e 0%, #1c1409 100%); border-color: #c8a060; }
+  .b-chai .door { border-color: #c8a060; background: #0d0a04; }
+  .b-chai .pct-badge { color: #c8a060; }
+
+  .b-reel .facade { background: linear-gradient(180deg, #0e1828 0%, #1c1409 100%); border-color: #4488cc; }
+  .b-reel .door { border-color: #4488cc; background: #060c18; }
+  .b-reel .pct-badge { color: #4488cc; }
+
+  .b-darkroom .facade { background: linear-gradient(180deg, #1a1508 0%, #1c1409 100%); border-color: #8a7a50; }
+  .b-darkroom .door { border-color: #8a7a50; background: #0d0a04; }
+  .b-darkroom .pct-badge { color: #8a7a50; }
+
+  .b-merwans .facade { background: linear-gradient(180deg, #1a0e08 0%, #1c1409 100%); border-color: #dd7733; }
+  .b-merwans .door { border-color: #dd7733; background: #0d0604; }
+  .b-merwans .pct-badge { color: #dd7733; }
+
+  .b-post .facade { background: linear-gradient(180deg, #0e1a0a 0%, #1c1409 100%); border-color: #66aa44; }
+  .b-post .door { border-color: #66aa44; background: #060d04; }
+  .b-post .pct-badge { color: #66aa44; }
+
+  .phases {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .phase {
+    margin-bottom: 2.5rem;
+    border: 1px solid #2a2010;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .phase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    background: #221a0c;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .phase-header:hover { background: #2a200e; }
+
+  .phase-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+  }
+
+  .phase-header .phase-pct {
+    font-size: 0.75rem;
+    color: #8a7a50;
+  }
+
+  .phase-header .phase-bar {
+    width: 120px;
+    height: 4px;
+    background: #2a2010;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-left: 1rem;
+  }
+
+  .phase-header .phase-bar-fill {
+    height: 100%;
+    background: #e8c87a;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+
+  .phase-body {
+    padding: 0.8rem 1.2rem 1rem;
+  }
+
+  .task {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0;
+    border-bottom: 1px solid #1a1408;
+    font-size: 0.78rem;
+  }
+
+  .task:last-child { border-bottom: none; }
+
+  .task .check {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #3a3018;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.6rem;
+  }
+
+  .task.done .check {
+    background: #e8c87a;
+    border-color: #e8c87a;
+    color: #1c1409;
+  }
+
+  .task.active .check {
+    border-color: #e8c87a;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(232,200,122,0.3); }
+    50% { box-shadow: 0 0 0 4px rgba(232,200,122,0.1); }
+  }
+
+  .task.done .task-text { color: #5a4a30; text-decoration: line-through; }
+  .task.active .task-text { color: #e8c87a; }
+  .task .task-text { color: #8a7a50; }
+
+  .task .tag {
+    font-size: 0.55rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+
+  .tag.sm { background: #1a2a10; color: #66aa44; }
+  .tag.md { background: #2a1a08; color: #dd9944; }
+  .tag.lg { background: #2a0e0e; color: #cc5544; }
+
+  .wire {
+    display: flex;
+    justify-content: center;
+    margin: -1.5rem 0 1rem;
+    position: relative;
+  }
+
+  .wire::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: #2a2010;
+  }
+
+  .wire .bulb {
+    width: 8px;
+    height: 8px;
+    background: #e8c87a;
+    border-radius: 50%;
+    margin: 0 3rem;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 8px #e8c87a40;
+  }
+
+  .milestone {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 0.8rem;
+    color: #5a4a30;
+    padding: 0.6rem 0 0;
+    border-top: 1px dashed #2a2010;
+    margin-top: 0.5rem;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #2a2010;
+    font-size: 0.65rem;
+    color: #3a3018;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ranveer behl</h1>
+  <p>fort mumbai gully &mdash; build progress</p>
+</header>
+
+<div class="overall-bar">
+  <div class="label">overall progress</div>
+  <div class="bar-track"><div class="bar-fill" style="width: 0%"></div></div>
+  <div class="pct">0%</div>
+</div>
+
+<div class="wire">
+  <div class="bulb"></div>
+  <div class="bulb"></div>
+  <div class="bulb"></div>
+  <div class="bulb"></div>
+  <div class="bulb"></div>
+</div>
+
+<div class="street">
+  <div class="building b-chai">
+    <div class="facade"><div class="glow"></div><div class="door"></div></div>
+    <div class="name">chai wala</div>
+    <div class="mag">chai quarterly</div>
+    <div class="pct-badge">--</div>
+  </div>
+  <div class="building b-reel">
+    <div class="facade"><div class="glow"></div><div class="door"></div></div>
+    <div class="name">regal cinema</div>
+    <div class="mag">reel</div>
+    <div class="pct-badge">--</div>
+  </div>
+  <div class="building b-darkroom">
+    <div class="facade"><div class="glow"></div><div class="door"></div></div>
+    <div class="name">camera emporium</div>
+    <div class="mag">the darkroom</div>
+    <div class="pct-badge">--</div>
+  </div>
+  <div class="building b-merwans">
+    <div class="facade"><div class="glow"></div><div class="door"></div></div>
+    <div class="name">kyani & co.</div>
+    <div class="mag">merwan's table</div>
+    <div class="pct-badge">--</div>
+  </div>
+  <div class="building b-post">
+    <div class="facade"><div class="glow"></div><div class="door"></div></div>
+    <div class="name">gpo fort</div>
+    <div class="mag">the post</div>
+    <div class="pct-badge">--</div>
+  </div>
+</div>
+
+<div class="phases">
+
+  <!-- PHASE 1 -->
+  <div class="phase">
+    <div class="phase-header">
+      <h2>phase 1 &mdash; foundation</h2>
+      <span class="phase-pct">0 / 6</span>
+      <div class="phase-bar"><div class="phase-bar-fill" style="width: 0%"></div></div>
+    </div>
+    <div class="phase-body">
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Vite scaffold + config + Three.js aliases</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">CSS design tokens + Google Fonts imports</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Entry point + canvas mount</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Three.js scene: sky dome + ground plane + dusk lighting</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Five building boxes with correct proportions</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">content.js data file with all placeholders</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="milestone">milestone: five lit boxes on a dark street</div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 -->
+  <div class="phase">
+    <div class="phase-header">
+      <h2>phase 2 &mdash; the gully comes alive</h2>
+      <span class="phase-pct">0 / 8</span>
+      <div class="phase-bar"><div class="phase-bar-fill" style="width: 0%"></div></div>
+    </div>
+    <div class="phase-body">
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Ink / crosshatch shader (cel shading + outline pass)</span>
+        <span class="tag lg">lg</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Postprocessing pipeline (Render > Outline > Bloom > Output)</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Building signage — Playfair Display + distress filter</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Street details: wire, lamps, cat, bicycle, rickshaw</span>
+        <span class="tag lg">lg</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Dusk lighting: amber lamps, star field, partial moon</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Navigation: click-drag, scroll, arrow keys, touch swipe</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Depth-of-field blur on peripheral buildings</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">"You are here" progress strip — 5 dots + building name</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="milestone">milestone: walk down a hand-drawn Fort Mumbai street</div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 -->
+  <div class="phase">
+    <div class="phase-header">
+      <h2>phase 3 &mdash; the transition</h2>
+      <span class="phase-pct">0 / 4</span>
+      <div class="phase-bar"><div class="phase-bar-fill" style="width: 0%"></div></div>
+    </div>
+    <div class="phase-body">
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">GSAP camera push into building doorway (~1.2s)</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Magazine cover component (parameterised per building)</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Page-turn CSS animation (desktop) + fade fallback (mobile)</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">"Back to street" exit — reverse transition</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="milestone">milestone: click a building, enter and return</div>
+    </div>
+  </div>
+
+  <!-- PHASE 4 -->
+  <div class="phase">
+    <div class="phase-header">
+      <h2>phase 4 &mdash; magazine interiors</h2>
+      <span class="phase-pct">0 / 6</span>
+      <div class="phase-bar"><div class="phase-bar-fill" style="width: 0%"></div></div>
+    </div>
+    <div class="phase-body">
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Shared magazine layout CSS (grid, columns, type)</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Reel — films spread + YouTube lightbox</span>
+        <span class="tag lg">lg</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Chai Quarterly — about me spread</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">The Darkroom — process & BTS spread</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Merwan's Table — other work masonry grid</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">The Post — contact telegram + Formspree</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="milestone">milestone: all five buildings have working interiors</div>
+    </div>
+  </div>
+
+  <!-- PHASE 5 -->
+  <div class="phase">
+    <div class="phase-header">
+      <h2>phase 5 &mdash; sound & soul</h2>
+      <span class="phase-pct">0 / 6</span>
+      <div class="phase-bar"><div class="phase-bar-fill" style="width: 0%"></div></div>
+    </div>
+    <div class="phase-body">
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Audio unlock on first interaction + "click to enter"</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Base layers: traffic hum + punctuation sounds</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Radio song from Cinema + azaan</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Footstep sound on navigation movement</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Building hover sounds (5 unique per building)</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Mute toggle UI in top-right</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="milestone">milestone: the street sounds alive</div>
+    </div>
+  </div>
+
+  <!-- PHASE 6 -->
+  <div class="phase">
+    <div class="phase-header">
+      <h2>phase 6 &mdash; polish & ship</h2>
+      <span class="phase-pct">0 / 8</span>
+      <div class="phase-bar"><div class="phase-bar-fill" style="width: 0%"></div></div>
+    </div>
+    <div class="phase-body">
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">"Skip to content" link — plain-text fallback</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">prefers-reduced-motion — disable animations + mute</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Keyboard accessibility audit</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Lazy-load interiors + YouTube embeds</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">OG image (1200x630, static)</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Meta tags + SEO</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Performance audit — 60fps target</span>
+        <span class="tag md">md</span>
+      </div>
+      <div class="task pending">
+        <div class="check"></div>
+        <span class="task-text">Deploy to Vercel / Netlify</span>
+        <span class="tag sm">sm</span>
+      </div>
+      <div class="milestone">milestone: live on the internet</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  fort mumbai gully &mdash; 38 tasks across 6 phases &mdash; built with claude code
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,40 @@
+name: Content update
+description: Swapping in real content — bio, films, images, audio
+labels: ["content"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this to track real content being swapped in for placeholders.
+        All content changes happen in `src/data/content.js` only.
+
+  - type: dropdown
+    id: section
+    attributes:
+      label: Which section?
+      multiple: true
+      options:
+        - About (bio, portrait, tagline)
+        - Films (YouTube IDs, descriptions)
+        - Process (method text, BTS stills)
+        - Other Work (images, links)
+        - Contact (email, social links)
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What's being added or changed
+      placeholder: e.g. "Adding real YouTube IDs for 3 films, updating bio text"
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: Edited `src/data/content.js`
+        - label: Added images to `public/images/` if needed
+        - label: Added audio files to `public/audio/` if needed
+        - label: Removed `[placeholder]` labels from visible elements
+        - label: Tested in browser before committing

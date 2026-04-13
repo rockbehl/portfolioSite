@@ -1,0 +1,19 @@
+{
+  "name": "ranveer-behl",
+  "version": "0.0.1",
+  "description": "ranveer behl — filmmaker. mumbai. fort gully portfolio.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "gsap": "^3.12.7",
+    "three": "^0.174.0",
+    "tone": "^14.7.77"
+  },
+  "devDependencies": {
+    "vite": "^6.3.2"
+  }
+}

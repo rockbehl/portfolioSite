@@ -1,0 +1,42 @@
+name: Idea / enhancement
+description: Something to improve, add, or explore — not a bug
+labels: ["idea"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A place to capture thoughts before they disappear. Nothing commits you to building it.
+
+  - type: input
+    id: summary
+    attributes:
+      label: The idea
+      placeholder: e.g. "Add a rain layer over the gully on rainy season dates"
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it fits
+      placeholder: How does this serve the concept? What does it add to the experience?
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Rough effort
+      options:
+        - quick (an afternoon)
+        - medium (a few days)
+        - big (a whole phase)
+        - unknown
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: When to think about it
+      options:
+        - after launch
+        - during a specific phase
+        - before launch
+        - just capturing it, no plans

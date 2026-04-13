@@ -1,0 +1,51 @@
+name: Task
+description: A build task from the phase plan
+labels: ["task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for planned work from the six-phase build plan.
+
+  - type: input
+    id: title
+    attributes:
+      label: Task
+      placeholder: e.g. "Implement ink/crosshatch shader (Phase 2.1)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Phase
+      options:
+        - Phase 1 — Foundation
+        - Phase 2 — The Gully
+        - Phase 3 — Transitions
+        - Phase 4 — Interiors
+        - Phase 5 — Sound
+        - Phase 6 — Polish & Ship
+    validations:
+      required: true
+
+  - type: dropdown
+    id: size
+    attributes:
+      label: Size
+      options:
+        - small
+        - medium
+        - large
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What needs to happen
+      placeholder: Describe the expected implementation, files affected, and any gotchas from the brief.
+
+  - type: textarea
+    id: brief_ref
+    attributes:
+      label: Brief reference
+      placeholder: Quote the relevant section of ranveer-behl-portfolio-brief.md if useful.

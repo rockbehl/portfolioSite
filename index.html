@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SEO -->
+  <title>ranveer behl</title>
+  <meta name="description" content="ranveer behl — filmmaker. mumbai." />
+  <meta property="og:title" content="ranveer behl" />
+  <meta property="og:description" content="a walk through fort." />
+  <meta property="og:image" content="/og-image.jpg" />
+
+  <!-- Accessibility: skip 3D scene entirely -->
+  <a href="#main-content" class="skip-link">skip to content</a>
+</head>
+<body>
+
+  <!-- 3D canvas mounts here -->
+  <canvas id="gully-canvas"></canvas>
+
+  <!-- Mute toggle (shown during gully view) -->
+  <button id="mute-toggle" aria-label="Toggle sound" hidden>
+    <span class="mute-icon">◉</span>
+    <span class="mute-label">sound</span>
+  </button>
+
+  <!-- Progress strip -->
+  <nav id="progress-strip" aria-label="Street navigation" hidden>
+    <div class="dots"></div>
+    <div class="building-label"></div>
+  </nav>
+
+  <!-- Magazine interior container (empty until a building is entered) -->
+  <main id="main-content" hidden></main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

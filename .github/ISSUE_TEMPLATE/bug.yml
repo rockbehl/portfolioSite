@@ -1,0 +1,60 @@
+name: Bug
+description: Something isn't working right
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for flagging. Be as specific as you can — the faster it's understood, the faster it's fixed.
+
+  - type: input
+    id: summary
+    attributes:
+      label: What's broken?
+      placeholder: e.g. "Camera push animation freezes on iOS Safari"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to the street
+        2. Click the Regal Cinema building
+        3. Camera pushes in but page-turn doesn't trigger
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen?
+      placeholder: Page-turn animation plays and the Reel spread opens.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Which phase is this in?
+      options:
+        - Phase 1 — Foundation
+        - Phase 2 — The Gully
+        - Phase 3 — Transitions
+        - Phase 4 — Interiors
+        - Phase 5 — Sound
+        - Phase 6 — Polish & Ship
+        - Not sure
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser / device
+      placeholder: e.g. Safari 17 on iPhone 15 / Chrome 124 on MacBook
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      placeholder: Console errors, screenshots, gut feeling...
