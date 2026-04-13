@@ -1,20 +1,19 @@
 // ─────────────────────────────────────────────────────────────
-// buildings.js — five building boxes on Horniman Circle Marg
-// Phase 1: basic geometry with accent colours.
-// Phase 2: ink shader, signage, street props added.
+// buildings.js — five buildings on Horniman Circle Marg
+// Phase 2: ink shader materials, canvas sign textures
 // ─────────────────────────────────────────────────────────────
 
 import * as THREE from 'three'
+import { createInkMaterial } from './shader.js'
 
-// Building definitions — single source of truth for 3D layout.
-// 'id' matches the content.js section keys.
+// ── Building definitions ──────────────────────────────────────
 export const BUILDINGS = [
   {
     id:      'chai',
     name:    'Chai Wala Stall',
     magazine:'Chai Quarterly',
+    sign:    'Chai Wala',
     accent:  0xc8a060,
-    // Geometry: narrower, lower (stall, not grand building)
     width:   3.2,
     height:  3.8,
     depth:   1.8,
@@ -24,8 +23,8 @@ export const BUILDINGS = [
     id:      'reel',
     name:    'Regal Cinema',
     magazine:'Reel',
+    sign:    'Regal Cinema',
     accent:  0x4488cc,
-    // Grandest building — tallest, widest
     width:   4.8,
     height:  6.2,
     depth:   2.2,
@@ -35,6 +34,7 @@ export const BUILDINGS = [
     id:      'darkroom',
     name:    'Camera Emporium',
     magazine:'The Darkroom',
+    sign:    'Camera Emporium',
     accent:  0x8a7a50,
     width:   3.6,
     height:  4.4,
@@ -45,6 +45,7 @@ export const BUILDINGS = [
     id:      'merwans',
     name:    'Kyani & Co.',
     magazine:"Merwan's Table",
+    sign:    'Kyani & Co.',
     accent:  0xdd7733,
     width:   3.8,
     height:  4.8,
@@ -55,8 +56,8 @@ export const BUILDINGS = [
     id:      'post',
     name:    'GPO Fort',
     magazine:'The Post',
+    sign:    'GPO Fort',
     accent:  0x66aa44,
-    // Classical colonial — wide and formal
     width:   4.4,
     height:  5.4,
     depth:   2.4,
@@ -64,84 +65,160 @@ export const BUILDINGS = [
   },
 ]
 
-export function buildStreet(scene) {
-  const buildings = []
+// ── Sign canvas texture ───────────────────────────────────────
+// Generates a distressed Playfair Display sign as a CanvasTexture.
+async function createSignTexture(text, accentHex) {
+  // Ensure font is loaded before drawing
+  await document.fonts.load('700 36px "Playfair Display"')
 
-  // ── Ground plane — cracked stone pavement ─────────────────
-  const groundGeo = new THREE.PlaneGeometry(40, 12)
-  const groundMat = new THREE.MeshLambertMaterial({
-    color: 0x140f06,
-  })
-  const ground = new THREE.Mesh(groundGeo, groundMat)
+  const W = 512, H = 128
+  const canvas = document.createElement('canvas')
+  canvas.width  = W
+  canvas.height = H
+  const ctx = canvas.getContext('2d')
+
+  // Transparent base
+  ctx.clearRect(0, 0, W, H)
+
+  // Convert hex int to CSS colour string
+  const cssColor = '#' + accentHex.toString(16).padStart(6, '0')
+
+  // Sign text — Playfair Display bold, centred
+  ctx.font         = '700 36px "Playfair Display", Georgia, serif'
+  ctx.textAlign    = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillStyle    = cssColor
+  ctx.fillText(text, W / 2, H / 2)
+
+  // Distress pass 1 — random punch-outs (destination-out removes alpha)
+  ctx.globalCompositeOperation = 'destination-out'
+  for (let i = 0; i < 400; i++) {
+    const r = Math.random() * 2.5 + 0.5
+    ctx.beginPath()
+    ctx.arc(Math.random() * W, Math.random() * H, r, 0, Math.PI * 2)
+    ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.5 + 0.15})`
+    ctx.fill()
+  }
+  ctx.globalCompositeOperation = 'source-over'
+
+  // Distress pass 2 — horizontal scratch lines
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)'
+  ctx.lineWidth   = 0.5
+  for (let i = 0; i < 6; i++) {
+    const y = Math.random() * H
+    ctx.beginPath()
+    ctx.moveTo(0, y)
+    ctx.lineTo(W, y)
+    ctx.stroke()
+  }
+
+  const tex = new THREE.CanvasTexture(canvas)
+  tex.needsUpdate = true
+  return tex
+}
+
+// ── buildStreet ───────────────────────────────────────────────
+// async: sign textures require font load
+export async function buildStreet(scene) {
+  const buildings      = []
+  const buildingGroups = []  // passed to OutlinePass
+
+  // ── Ground plane ─────────────────────────────────────────
+  const groundMat = createInkMaterial(0x140f06, 0x1a1408)
+  const ground    = new THREE.Mesh(
+    new THREE.PlaneGeometry(40, 12),
+    groundMat
+  )
   ground.rotation.x = -Math.PI / 2
   ground.position.y = 0
   ground.receiveShadow = true
   scene.add(ground)
 
-  // ── Side walls — alley walls between buildings ─────────────
-  const wallGeo = new THREE.PlaneGeometry(40, 8)
-  const wallMat = new THREE.MeshLambertMaterial({ color: 0x1a1408, side: THREE.DoubleSide })
-
-  const backWall = new THREE.Mesh(wallGeo, wallMat)
+  // ── Back wall ─────────────────────────────────────────────
+  const wallMat = createInkMaterial(0x1a1408, 0x2a1e0d)
+  const backWall = new THREE.Mesh(
+    new THREE.PlaneGeometry(40, 8),
+    wallMat
+  )
   backWall.position.set(0, 4, -2.5)
   backWall.receiveShadow = true
   scene.add(backWall)
 
   // ── Buildings ─────────────────────────────────────────────
-  BUILDINGS.forEach((def) => {
+  for (const def of BUILDINGS) {
     const group = new THREE.Group()
     group.position.x = def.x
 
-    // Main facade box
-    const facadeGeo = new THREE.BoxGeometry(def.width, def.height, def.depth)
-    const facadeMat = new THREE.MeshLambertMaterial({ color: 0x1c1409 })
-    const facade = new THREE.Mesh(facadeGeo, facadeMat)
+    // Facade — main box with ink cel shading
+    const facadeMat = createInkMaterial(0x1c1409, def.accent)
+    const facade    = new THREE.Mesh(
+      new THREE.BoxGeometry(def.width, def.height, def.depth),
+      facadeMat
+    )
     facade.position.set(0, def.height / 2, -def.depth / 2)
     facade.castShadow    = true
     facade.receiveShadow = true
     group.add(facade)
 
-    // Accent trim — a thin strip across the facade face
-    const trimGeo = new THREE.BoxGeometry(def.width, 0.12, 0.05)
-    const trimMat = new THREE.MeshLambertMaterial({ color: def.accent })
-    const trim    = new THREE.Mesh(trimGeo, trimMat)
+    // Accent trim — thin strip along top of facade
+    const trimMat = createInkMaterial(def.accent, def.accent)
+    const trim    = new THREE.Mesh(
+      new THREE.BoxGeometry(def.width, 0.12, 0.05),
+      trimMat
+    )
     trim.position.set(0, def.height - 0.5, 0.02)
     group.add(trim)
 
-    // Door arch — darker recess in the centre of the facade
-    const doorW  = 0.9
-    const doorH  = 1.8
-    const doorGeo = new THREE.BoxGeometry(doorW, doorH, 0.1)
-    const doorMat = new THREE.MeshLambertMaterial({ color: 0x080604 })
-    const door    = new THREE.Mesh(doorGeo, doorMat)
+    // Door — dark recess
+    const doorW   = 0.9, doorH = 1.8
+    const doorMat = createInkMaterial(0x080604, 0x1c1409)
+    const door    = new THREE.Mesh(
+      new THREE.BoxGeometry(doorW, doorH, 0.1),
+      doorMat
+    )
     door.position.set(0, doorH / 2, 0.04)
     group.add(door)
 
-    // Window — above the door, using accent colour as warm glow
-    const winGeo = new THREE.BoxGeometry(def.width * 0.55, 0.9, 0.05)
-    const winMat = new THREE.MeshLambertMaterial({
-      color:       def.accent,
-      emissive:    new THREE.Color(def.accent),
-      emissiveIntensity: 0.2,
+    // Window — stays MeshBasicMaterial (emissive glow, not cel-shaded)
+    const winMat = new THREE.MeshBasicMaterial({
+      color:    new THREE.Color(def.accent).multiplyScalar(0.3),
+      transparent: true,
+      opacity: 0.85,
     })
-    const win = new THREE.Mesh(winGeo, winMat)
+    const win = new THREE.Mesh(
+      new THREE.BoxGeometry(def.width * 0.55, 0.9, 0.05),
+      winMat
+    )
     win.position.set(0, doorH + 1.1, 0.04)
     group.add(win)
 
-    // Store user data for raycasting (building identification)
+    // Sign — Playfair Display canvas texture
+    const signTex = await createSignTexture(def.sign, def.accent)
+    const sign    = new THREE.Mesh(
+      new THREE.PlaneGeometry(def.width * 0.85, 0.5),
+      new THREE.MeshBasicMaterial({
+        map:        signTex,
+        transparent: true,
+        alphaTest:  0.05,
+        depthWrite: false,
+      })
+    )
+    sign.position.set(0, def.height - 1.1, 0.08)
+    group.add(sign)
+
+    // User data for raycasting and building entry
     group.userData = {
-      buildingId: def.id,
-      name:       def.name,
-      magazine:   def.magazine,
+      buildingId:  def.id,
+      name:        def.name,
+      magazine:    def.magazine,
       interactive: true,
     }
-
-    // Attach def to group for nav system
     group.buildingDef = def
 
     scene.add(group)
     buildings.push(group)
-  })
+    buildingGroups.push(group)
+  }
 
-  return { buildings, streetMesh: ground }
+  return { buildings, streetMesh: ground, buildingGroups }
 }

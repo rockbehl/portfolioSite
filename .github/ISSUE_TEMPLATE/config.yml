@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Build plan & phases
-    url: https://github.com/ranveerbehl/ranveersite/blob/main/PLAN.md
+    url: https://github.com/rockbehl/ranveersite/blob/main/PLAN.md
     about: The full six-phase build plan with all tasks and milestones.
   - name: Changelog
-    url: https://github.com/ranveerbehl/ranveersite/blob/main/CHANGELOG.md
+    url: https://github.com/rockbehl/ranveersite/blob/main/CHANGELOG.md
     about: What's been built and what's coming.

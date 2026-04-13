@@ -15,5 +15,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
+    // esnext target required for top-level await in main.js
+    target: 'esnext',
   },
 })
