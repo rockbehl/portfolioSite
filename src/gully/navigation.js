@@ -17,6 +17,7 @@ export function initNavigation(camera, buildings, outlinePass) {
   let dragStartX = 0
   let dragOriginX = 0
   let activeIdx  = 2   // Camera Emporium centred on load
+  let _locked    = false   // set true during enter/exit transitions
 
   // ── Mouse position (normalised device coords for raycaster) ─
   const mouse     = new THREE.Vector2(0, 0)
@@ -98,6 +99,8 @@ export function initNavigation(camera, buildings, outlinePass) {
 
   // ── update (called each frame) ────────────────────────────────
   function update(elapsed, currentOutlinePass) {
+    if (_locked) return   // freeze navigation during transitions
+
     // Keyboard walk
     if (keys['ArrowLeft']  || keys['a']) targetX -= WALK_SPEED * 0.016
     if (keys['ArrowRight'] || keys['d']) targetX += WALK_SPEED * 0.016
@@ -151,5 +154,7 @@ export function initNavigation(camera, buildings, outlinePass) {
     update,
     getActiveBuilding: () => buildings[activeIdx],
     getActiveIdx:      () => activeIdx,
+    getHoveredGroup:   () => hoveredGroup,
+    setLocked:         (val) => { _locked = val },
   }
 }

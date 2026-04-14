@@ -42,7 +42,11 @@ export async function initScene(canvas) {
     100
   )
   camera.position.set(0, 1.7, 7)
-  camera.lookAt(0, 1.7, 0)
+
+  // lookAtTarget is animated by GSAP during enter/exit transitions.
+  // The tick loop calls camera.lookAt() every frame from this object.
+  const lookAtTarget = { x: 0, y: 1.7, z: 0 }
+  camera.lookAt(lookAtTarget.x, lookAtTarget.y, lookAtTarget.z)
 
   // ── Lighting ──────────────────────────────────────────────
   const { lamps, lampBulbs } = setupLighting(scene)
@@ -88,12 +92,15 @@ export async function initScene(canvas) {
     nav.update(elapsed, outlinePass)
     flickerLamps(lamps, elapsed)
 
+    // Apply animated lookAt every frame (GSAP mutates lookAtTarget during transitions)
+    camera.lookAt(lookAtTarget.x, lookAtTarget.y, lookAtTarget.z)
+
     composer.render()
   }
 
   tick()
 
-  return { scene, camera, renderer, composer, buildings, nav, outlinePass, bloomPass, bokehPass }
+  return { scene, camera, renderer, composer, buildings, nav, lookAtTarget, outlinePass, bloomPass, bokehPass }
 }
 
 // ── Sky dome + stars ──────────────────────────────────────────

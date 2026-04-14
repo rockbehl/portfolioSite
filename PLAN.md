@@ -1,19 +1,21 @@
 # ranveer behl — fort mumbai gully portfolio
 ## build plan
 
+*last updated: 2026-04-13*
+
 ---
 
 ## the pitch
 
-Your brief describes a **3D interactive portfolio disguised as a night walk through Fort Mumbai**. Five buildings on Horniman Circle Marg, each housing a magazine-style interior spread. Ink-illustrated Three.js exterior, editorial interiors, Tone.js soundscape, GSAP transitions.
+A **3D interactive portfolio disguised as a night walk through Fort Mumbai**. Five buildings on Horniman Circle Marg, each housing a magazine-style interior spread. Ink-illustrated Three.js exterior, editorial interiors, Tone.js soundscape, GSAP transitions.
 
-This is ambitious — but the brief is tight enough that every decision is already made. No scope creep. We build exactly what's described.
+The brief is locked. No scope creep. We build exactly what's described.
 
 ---
 
 ## phases
 
-### phase 1 — foundation (scaffold + scene)
+### phase 1 — foundation (scaffold + scene) ✅ done
 The skeleton. Vite project, CSS tokens, fonts, and a black screen with a lit Three.js scene.
 
 | # | task | files | est |
@@ -29,8 +31,8 @@ The skeleton. Vite project, CSS tokens, fonts, and a black screen with a lit Thr
 
 ---
 
-### phase 2 — the gully comes alive
-Ink shader, street props, signage, navigation. This is where the magic happens.
+### phase 2 — the gully comes alive ✅ done
+Ink shader, street props, signage, navigation.
 
 | # | task | files | est |
 |---|------|-------|-----|
@@ -47,7 +49,7 @@ Ink shader, street props, signage, navigation. This is where the magic happens.
 
 ---
 
-### phase 3 — the transition
+### phase 3 — the transition ✅ done
 Camera push into buildings, magazine covers, page-turn animation.
 
 | # | task | files | est |

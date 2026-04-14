@@ -10,10 +10,35 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Planned
-- Phase 3: camera push transition, magazine covers, page-turn animation
 - Phase 4: all five magazine interior spreads
 - Phase 5: Tone.js ambient soundscape
 - Phase 6: accessibility, performance audit, deployment
+
+---
+
+## [0.3.0] — 2026-04-13
+
+### Added
+- **Camera push transition** — GSAP `power2.inOut` push to building doorway (1200ms); `lookAtTarget` object animated simultaneously so camera tracks building x-axis and leans behind façade on entry
+- **`lookAtTarget`** — plain `{x,y,z}` object in `scene.js`; `camera.lookAt()` called every frame from it; GSAP mutates it during enter/exit; restores to `(0,1.7,0)` on exit
+- **Magazine cover system** — five themed covers auto-built from `MAGAZINE_META` (name, issue, tagline, bg, fg, accent per building). Cover fades in 250ms after camera push, then page-turns
+- **CSS 3D page-turn** — `perspective` on wrapper parent (iOS Safari requirement); `rotateY(-180°)` on `#magazine-cover`; `backface-visibility: hidden` with `-webkit-` prefix; `animationend` triggers interior reveal
+- **Mobile fade fallback** — touch devices (`ontouchstart in window`) get a 400ms opacity fade instead of 3D rotation
+- **`prefers-reduced-motion` cut** — instant class swap, no animation, no timers
+- **Interior shell** — `#interior-shell` div revealed after page-turn; Phase 4 will inject spread content here
+- **Back button** — `#back-btn` fixed top-left; triggers reverse page-turn + GSAP camera pull-back (1000ms); receives focus on entry for keyboard users
+- **Escape key** — exits building from anywhere in interior
+- **Enter key** — enters the nearest/active building from the street
+- **Click-to-enter** — mousedown/mouseup 5px threshold distinguishes click from street drag; raycasts against building groups; same logic on touchend
+- **`nav.setLocked(val)`** — freezes all street navigation (keyboard, drag, scroll, hover) during enter/exit transitions
+- **`nav.getHoveredGroup()`** — exposes currently hovered building group (available for future use)
+
+### Changed
+- `navigation.js`: added `_locked` flag; `update()` returns early when locked; `setLocked` and `getHoveredGroup` added to public API
+- `scene.js`: `lookAtTarget` added after camera init; `camera.lookAt(lookAtTarget...)` called each tick; `lookAtTarget` included in return value
+- `main.js`: imports `transition.js` and `interior.css`; wires click/touch/Enter/Escape handlers; calls `initTransition` after scene loads
+- `transition.js`: full Phase 3 implementation (was empty stub)
+- `interior.css`: full Phase 3 implementation (was single-comment stub)
 
 ---
 
@@ -76,5 +101,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `progress.html` — visual build tracker (open in browser)
 - `PLAN.md` — full six-phase build plan with task breakdown
 
-[Unreleased]: https://github.com/rockbehl/ranveersite/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/rockbehl/ranveersite/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/rockbehl/ranveersite/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/rockbehl/ranveersite/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/rockbehl/ranveersite/releases/tag/v0.1.0

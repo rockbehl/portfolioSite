@@ -1,1 +1,205 @@
-/* interior.css — shared magazine spread styles (Phase 4) */
+/* ─────────────────────────────────────────────────────────────
+   interior.css — Phase 3: magazine cover + page-turn transition
+   Phase 4 will add shared magazine spread layout styles below.
+   ─────────────────────────────────────────────────────────────
+*/
+
+/* ── Overlay ──────────────────────────────────────────────────
+   Sits above the Three.js canvas. pointer-events disabled until
+   .visible is applied so the gully remains interactive.
+   ─────────────────────────────────────────────────────────────
+*/
+#interior-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-interior);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#interior-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Cover wrapper ────────────────────────────────────────────
+   perspective MUST live on the parent of the animating element.
+   iOS Safari requires this — putting perspective on the rotating
+   element itself breaks backface-visibility.
+   ─────────────────────────────────────────────────────────────
+*/
+#cover-wrapper {
+  position: absolute;
+  inset: 0;
+  perspective: 1400px;
+  perspective-origin: center center;
+}
+
+/* ── Magazine cover — the page that flips ────────────────────
+   transform-origin: left center → rotates around its left spine
+   ─────────────────────────────────────────────────────────────
+*/
+#magazine-cover {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform-origin: left center;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+#magazine-cover.fade-in {
+  opacity: 1;
+}
+
+/* ── Page-turn keyframes ──────────────────────────────────── */
+@keyframes pageTurn {
+  0%   { transform: rotateY(0deg); }
+  100% { transform: rotateY(-180deg); }
+}
+
+@keyframes pageUnturn {
+  0%   { transform: rotateY(-180deg); }
+  100% { transform: rotateY(0deg); }
+}
+
+#magazine-cover.turning {
+  animation: pageTurn 0.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards;
+}
+
+#magazine-cover.unturning {
+  animation: pageUnturn 0.6s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards;
+}
+
+#magazine-cover.turned-instant {
+  transform: rotateY(-180deg);
+}
+
+/* ── Cover face shared styles ─────────────────────────────── */
+.cover-face {
+  position: absolute;
+  inset: 0;
+  background: var(--cover-bg, #f5efe0);
+  color: var(--cover-fg, #3a2a10);
+  /* Both prefixed and unprefixed required for iOS Safari */
+  -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+}
+
+/* Back face is pre-rotated 180° so it faces forward after flip */
+#cover-back {
+  transform: rotateY(180deg);
+}
+
+/* ── Cover front — editorial magazine cover design ─────────── */
+#cover-front {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 4rem 3.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Coloured spine on left edge */
+.cover-spine {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 7px;
+  background: var(--cover-accent, #c8a060);
+}
+
+.cover-issue {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  color: var(--cover-accent, #c8a060);
+}
+
+.cover-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 9vw, 6rem);
+  font-weight: 700;
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+  text-align: center;
+  color: var(--cover-fg);
+  margin: 0;
+}
+
+.cover-tagline {
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 2vw, 1.15rem);
+  font-style: italic;
+  text-align: center;
+  opacity: 0.65;
+  color: var(--cover-fg);
+  margin: 0;
+}
+
+.cover-building {
+  font-family: var(--font-handwritten);
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  text-align: center;
+  color: var(--cover-accent, #c8a060);
+  margin: 0;
+}
+
+/* ── Interior shell ───────────────────────────────────────────
+   Revealed after page-turn completes. Phase 4 renders spreads here.
+   ─────────────────────────────────────────────────────────────
+*/
+#interior-shell {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Back button ──────────────────────────────────────────── */
+#back-btn {
+  position: fixed;
+  top: 1.25rem;
+  left: 1.5rem;
+  z-index: calc(var(--z-interior) + 10);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: transparent;
+  color: currentColor;
+  border: 1px solid currentColor;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  opacity: 0.65;
+  transition: opacity 0.2s ease;
+}
+
+#back-btn:hover,
+#back-btn:focus-visible {
+  opacity: 1;
+  outline: none;
+  box-shadow: 0 0 0 2px currentColor;
+}
+
+/* ── Reduced motion overrides ─────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  #magazine-cover,
+  #interior-overlay,
+  #back-btn {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Phase 4 — shared magazine spread styles (added below)
+   ─────────────────────────────────────────────────────────────
+*/
